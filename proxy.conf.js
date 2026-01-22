@@ -9,11 +9,7 @@ module.exports = {
     secure: false,
     logLevel: "debug"
   },
-  "/health": {
-    target: "http://localhost:3000",
-    secure: false
-  },
-  "/api/status": {
+  "/_health": {
     target: "http://localhost:3000",
     secure: false
   },

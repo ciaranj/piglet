@@ -66,8 +66,9 @@ router.post('/sites', (req, res) => {
       return res.status(400).json({ error: 'Path must start with /' });
     }
 
-    if (sitePath.includes('_pigsty') || sitePath.includes('_auth')) {
-      return res.status(400).json({ error: 'Path cannot contain reserved names' });
+    // Block paths starting with underscore (reserved for system routes)
+    if (sitePath.startsWith('/_')) {
+      return res.status(400).json({ error: 'Path cannot start with underscore (reserved for system routes)' });
     }
 
     // Check if path already exists
@@ -157,6 +158,11 @@ router.put('/sites/:id', (req, res) => {
       // Validate new path
       if (!newPath.startsWith('/')) {
         return res.status(400).json({ error: 'Path must start with /' });
+      }
+
+      // Block paths starting with underscore (reserved for system routes)
+      if (newPath.startsWith('/_')) {
+        return res.status(400).json({ error: 'Path cannot start with underscore (reserved for system routes)' });
       }
 
       const existing = db.getSiteByPath(newPath);

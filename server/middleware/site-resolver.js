@@ -9,8 +9,7 @@ async function siteResolver(req, res, next) {
   // Skip reserved paths
   if (req.path.startsWith('/_pigsty') ||
       req.path.startsWith('/_auth') ||
-      req.path.startsWith('/health') ||
-      req.path.startsWith('/api/status')) {
+      req.path.startsWith('/_health')) {
     return next('route');
   }
 

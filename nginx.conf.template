@@ -42,14 +42,7 @@ http {
         server_name _;
 
         # Health check endpoint (direct to backend)
-        location /health {
-            proxy_pass http://backend;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-        }
-
-        # API status endpoint
-        location /api/status {
+        location /_health {
             proxy_pass http://backend;
             proxy_http_version 1.1;
             proxy_set_header Connection "";

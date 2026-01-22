@@ -51,8 +51,7 @@ app.use(session({
 db.initialize();
 
 // Health check routes (no auth required)
-app.use('/health', healthRoutes);
-app.use('/api/status', healthRoutes);
+app.use('/_health', healthRoutes);
 
 // Auth routes
 app.use('/_auth', authRoutes);
