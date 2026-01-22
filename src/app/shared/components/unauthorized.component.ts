@@ -2,10 +2,9 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-unauthorized',
-  standalone: true,
-  imports: [RouterLink],
-  template: `
+    selector: 'app-unauthorized',
+    imports: [RouterLink],
+    template: `
     <div class="unauthorized-page">
       <div class="content">
         <h1>403</h1>
@@ -15,7 +14,7 @@ import { RouterLink } from '@angular/router';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .unauthorized-page {
       min-height: 100vh;
       display: flex;

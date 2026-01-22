@@ -9,10 +9,9 @@ import { Site, AuthConfig, AuthType, EmailSettings, ContentVersion } from '../..
 import { User } from '../../models/user.model';
 
 @Component({
-  selector: 'app-site-detail',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
-  template: `
+    selector: 'app-site-detail',
+    imports: [CommonModule, RouterLink, FormsModule],
+    template: `
     <div class="site-detail">
       @if (loading()) {
         <div class="loading">Loading site...</div>
@@ -240,7 +239,7 @@ import { User } from '../../models/user.model';
       }
     </div>
   `,
-  styles: [`
+    styles: [`
     .site-detail {
       padding: 2rem;
       max-width: 1200px;

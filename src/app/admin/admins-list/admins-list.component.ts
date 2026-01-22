@@ -1,15 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
 
 @Component({
-  selector: 'app-admins-list',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
+    selector: 'app-admins-list',
+    imports: [FormsModule],
+    template: `
     <div class="admins-list">
       <header class="page-header">
         <h1>Global Administrators</h1>
@@ -94,7 +93,7 @@ import { User } from '../../models/user.model';
       }
     </div>
   `,
-  styles: [`
+    styles: [`
     .admins-list {
       padding: 2rem;
       max-width: 800px;

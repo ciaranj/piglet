@@ -1,15 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SitesService } from '../../services/sites.service';
 import { Site, AuthType } from '../../models/site.model';
 
 @Component({
-  selector: 'app-sites-list',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
-  template: `
+    selector: 'app-sites-list',
+    imports: [RouterLink, FormsModule],
+    template: `
     <div class="sites-list">
       <header class="page-header">
         <h1>Documentation Sites</h1>
@@ -125,7 +124,7 @@ import { Site, AuthType } from '../../models/site.model';
       }
     </div>
   `,
-  styles: [`
+    styles: [`
     .sites-list {
       padding: 2rem;
       max-width: 1200px;

@@ -1,13 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-admin-layout',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
-  template: `
+    selector: 'app-admin-layout',
+    imports: [RouterOutlet, RouterLink, RouterLinkActive],
+    template: `
     <div class="admin-layout">
       <nav class="sidebar">
         <div class="logo">
@@ -48,7 +47,7 @@ import { AuthService } from '../services/auth.service';
       </main>
     </div>
   `,
-  styles: [`
+    styles: [`
     .admin-layout {
       display: flex;
       min-height: 100vh;
