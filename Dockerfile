@@ -2,7 +2,7 @@
 FROM node:22-alpine AS frontend-builder
 WORKDIR /app
 COPY package*.json ./
-RUN --mount=type=secret,id=npmrc,dst=/root/.npmrc npm ci
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -11,7 +11,7 @@ FROM node:22-alpine AS server-builder
 WORKDIR /app/server
 RUN apk add --no-cache python3 make g++
 COPY server/package*.json ./
-RUN --mount=type=secret,id=npmrc,dst=/root/.npmrc npm ci --only=production
+RUN npm ci --only=production
 
 # Production image
 FROM node:22-alpine

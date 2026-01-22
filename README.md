@@ -53,7 +53,7 @@ npm run build:prod
 #### Using docker-compose
 
 ```bash
-# Build and run (uses ~/.npmrc for private registry auth)
+# Build and run
 docker-compose up --build
 
 # Access at http://localhost:8080
@@ -64,8 +64,8 @@ docker-compose up --build
 When running the container locally over HTTP (not HTTPS), you need to configure the environment variables appropriately:
 
 ```bash
-# Build the image (requires ~/.npmrc for npm authentication)
-docker build --secret id=npmrc,src=$HOME/.npmrc -t piglet .
+# Build the image
+docker build -t piglet .
 
 # Run with local development settings
 docker run -p 4200:3000 \
