@@ -1,0 +1,38 @@
+services:
+  piglet:
+    build: .
+    ports:
+      - "8080:80"
+      - "3000:3000"
+    volumes:
+      - piglet-data:/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_PATH=/data
+      - DB_PATH=/data/piglet.db
+      - COOKIE_SECRET=${COOKIE_SECRET:-development-secret}
+      - SESSION_MAX_AGE=86400000
+      - BASE_URL=${BASE_URL:-http://localhost:8080}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:8080}
+      - MAX_UPLOAD_SIZE=200M
+      # Entra ID
+      - ENTRA_TENANT_ID=${ENTRA_TENANT_ID:-}
+      - ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID:-}
+      - ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET:-}
+      # Google OAuth
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      # Microsoft OAuth
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID:-}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET:-}
+      # SMTP
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-noreply@piglet.local}
+    restart: unless-stopped
+
+volumes:
+  piglet-data:
