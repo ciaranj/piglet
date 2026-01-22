@@ -1,0 +1,136 @@
+# Piglet
+
+A static documentation hosting platform with configurable per-site authentication.
+
+## Features
+
+- **Upload and Serve Static Sites**: Upload zip files containing HTML documentation and serve them as static sites
+- **Flexible URL Paths**: Create sites at any path (e.g., `/help`, `/docs/v2`, `/productdocs/9.1`)
+- **Per-Site Authentication**: Configure different auth methods for each site:
+  - Anonymous (public access)
+  - Google Sign-In
+  - Microsoft Sign-In
+  - Email verification (magic link or registration flow)
+- **Domain Restrictions**: Limit email auth to specific domains
+- **Admin Portal**: Manage sites and administrators via web UI
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Development Setup
+
+1. Install dependencies:
+```bash
+npm install
+cd server && npm install
+```
+
+2. Copy environment configuration:
+```bash
+cp server/.env.example server/.env
+# Edit .env with your configuration
+```
+
+3. Start development servers:
+```bash
+npm run start:dev
+```
+
+This starts both the Angular dev server (port 4200) and Express backend (port 3000) with proxy configuration.
+
+### Production Build
+
+```bash
+npm run build:prod
+```
+
+### Docker
+
+```bash
+# Build and run
+docker-compose up --build
+
+# Access at http://localhost:8080
+```
+
+## Architecture
+
+```
+piglet/
+├── src/                  # Angular frontend (admin portal)
+├── server/               # Express backend
+│   ├── routes/           # API endpoints
+│   ├── middleware/       # Auth, site resolution
+│   └── services/         # Database, storage, email
+├── helm/piglet/          # Kubernetes Helm chart
+├── Dockerfile
+└── docker-compose.yml
+```
+
+## API Endpoints
+
+### Admin API (`/_pigsty/api/`)
+
+- `GET /sites` - List all sites
+- `POST /sites` - Create a site
+- `GET /sites/:id` - Get site details
+- `PUT /sites/:id` - Update site
+- `DELETE /sites/:id` - Delete site
+- `POST /sites/:id/upload` - Upload content (zip file)
+- `GET/PUT /sites/:id/auth` - Manage auth config
+
+### Auth API (`/_auth/`)
+
+- `GET /session` - Check current session
+- `POST /logout` - Clear session
+- `GET /entra/login` - Admin login via Entra ID
+- `GET /google/login?site=:path` - Google sign-in
+- `GET /microsoft/login?site=:path` - Microsoft sign-in
+- `POST /email/send` - Send magic link
+
+## Configuration
+
+Key environment variables (see `server/.env.example`):
+
+| Variable | Description |
+|----------|-------------|
+| `DATA_PATH` | Storage directory (default: `./data`) |
+| `COOKIE_SECRET` | Session signing secret |
+| `ENTRA_TENANT_ID` | Azure AD tenant for admin auth |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `MICROSOFT_CLIENT_ID` | Microsoft OAuth client ID |
+| `SMTP_HOST` | SMTP server for email auth |
+
+## Kubernetes Deployment
+
+```bash
+# Create values override file
+cat > values-override.yaml << EOF
+ingress:
+  hosts:
+    - host: docs.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+externalUrl:
+  baseUrl: https://docs.example.com
+
+secrets:
+  cookieSecret: "your-secret"
+  entraTenantId: "your-tenant"
+  entraClientId: "your-client-id"
+  entraClientSecret: "your-secret"
+EOF
+
+# Install
+helm install piglet ./helm/piglet -f values-override.yaml
+```
+
+## License
+
+MIT
