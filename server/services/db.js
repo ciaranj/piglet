@@ -7,6 +7,19 @@ const DB_PATH = process.env.DB_PATH || path.join(DATA_PATH, 'piglet.db');
 
 let db = null;
 
+// Schema migrations - add new migrations to the end of this array
+// Each migration should have: version (incrementing), description, and up function
+const migrations = [
+  // Example migration (uncomment when needed):
+  // {
+  //   version: 1,
+  //   description: 'Add new_column to sites table',
+  //   up: (database) => {
+  //     database.exec(`ALTER TABLE sites ADD COLUMN new_column TEXT`);
+  //   }
+  // }
+];
+
 function getDb() {
   if (!db) {
     // Ensure data directory exists
@@ -19,6 +32,52 @@ function getDb() {
     db.pragma('foreign_keys = ON');
   }
   return db;
+}
+
+function getSchemaVersion(database) {
+  try {
+    const row = database.prepare('SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1').get();
+    return row ? row.version : 0;
+  } catch (e) {
+    // Table doesn't exist yet
+    return 0;
+  }
+}
+
+function runMigrations(database) {
+  // Create migrations table if it doesn't exist
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version INTEGER PRIMARY KEY,
+      description TEXT,
+      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  const currentVersion = getSchemaVersion(database);
+  const pendingMigrations = migrations.filter(m => m.version > currentVersion);
+
+  if (pendingMigrations.length === 0) {
+    if (currentVersion > 0) {
+      console.log(`Database schema is up to date (version ${currentVersion})`);
+    }
+    return;
+  }
+
+  console.log(`Running ${pendingMigrations.length} database migration(s)...`);
+
+  for (const migration of pendingMigrations) {
+    console.log(`  Migrating to version ${migration.version}: ${migration.description}`);
+
+    database.transaction(() => {
+      migration.up(database);
+      database.prepare(
+        'INSERT INTO schema_migrations (version, description) VALUES (?, ?)'
+      ).run(migration.version, migration.description);
+    })();
+  }
+
+  console.log(`Database migrated to version ${migrations[migrations.length - 1].version}`);
 }
 
 function initialize() {
@@ -140,6 +199,9 @@ function initialize() {
     CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
     CREATE INDEX IF NOT EXISTS idx_email_tokens_email ON email_tokens(email);
   `);
+
+  // Run any pending migrations
+  runMigrations(database);
 
   console.log('Database initialized');
   return database;
