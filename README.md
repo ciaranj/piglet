@@ -18,7 +18,7 @@ A static documentation hosting platform with configurable per-site authenticatio
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22+
 - npm
 
 ### Development Setup
