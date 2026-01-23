@@ -6,7 +6,7 @@ const email = require('../services/email');
 const oauth = require('../services/oauth');
 
 const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE) || 86400000;
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:4200';
 
 // Get current session
 router.get('/session', (req, res) => {

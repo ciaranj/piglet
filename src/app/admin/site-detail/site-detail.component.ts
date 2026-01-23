@@ -99,40 +99,73 @@ import { User } from '../../models/user.model';
             <h2>Authentication</h2>
             <p class="description">Configure how users access this documentation.</p>
 
-            <div class="auth-options">
-              @for (option of authOptions; track option.type) {
-                <label class="auth-option">
-                  <input type="checkbox"
-                         [checked]="isAuthEnabled(option.type)"
-                         (change)="toggleAuth(option.type, $event)" />
-                  <span class="auth-label">
-                    <strong>{{ option.label }}</strong>
-                    <small>{{ option.description }}</small>
-                  </span>
-                </label>
-              }
+            <div class="access-toggle">
+              <label class="toggle-option">
+                <input type="radio" name="accessType" value="public"
+                       [checked]="isPublic()"
+                       (change)="setPublicAccess(true)" />
+                <span class="toggle-label">
+                  <strong>Public</strong>
+                  <small>Anyone can view without logging in</small>
+                </span>
+              </label>
+              <label class="toggle-option">
+                <input type="radio" name="accessType" value="authenticated"
+                       [checked]="!isPublic()"
+                       (change)="setPublicAccess(false)" />
+                <span class="toggle-label">
+                  <strong>Authenticated</strong>
+                  <small>Users must sign in to view</small>
+                </span>
+              </label>
             </div>
 
-            @if (isAuthEnabled('email')) {
-              <div class="email-settings">
-                <h3>Email Settings</h3>
-                <div class="form-group">
-                  <label for="flowType">Login Flow</label>
-                  <select id="flowType" [(ngModel)]="emailFlowType" (change)="updateEmailSettings()">
-                    <option value="magic_link">Magic Link (passwordless)</option>
-                    <option value="register">Registration Required</option>
-                  </select>
+            @if (!isPublic()) {
+              <div class="auth-methods">
+                <h3>Authentication Methods</h3>
+                <p class="description">Select one or more sign-in options for users.</p>
+
+                <div class="auth-options">
+                  @for (option of authMethodOptions; track option.type) {
+                    <label class="auth-option">
+                      <input type="checkbox"
+                             [checked]="isAuthEnabled(option.type)"
+                             (change)="toggleAuth(option.type, $event)" />
+                      <span class="auth-label">
+                        <strong>{{ option.label }}</strong>
+                        <small>{{ option.description }}</small>
+                      </span>
+                    </label>
+                  }
                 </div>
-                <div class="form-group">
-                  <label for="domains">Allowed Domains (comma-separated, leave empty for any)</label>
-                  <input id="domains" type="text" [(ngModel)]="emailDomains"
-                         placeholder="company.com, partner.org"
-                         (blur)="updateEmailSettings()" />
-                </div>
+
+                @if (isAuthEnabled('email')) {
+                  <div class="email-settings">
+                    <h3>Email Settings</h3>
+                    <div class="form-group">
+                      <label for="flowType">Login Flow</label>
+                      <select id="flowType" [(ngModel)]="emailFlowType" (change)="updateEmailSettings()">
+                        <option value="magic_link">Magic Link (passwordless)</option>
+                        <option value="register">Registration Required</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="domains">Allowed Domains (comma-separated, leave empty for any)</label>
+                      <input id="domains" type="text" [(ngModel)]="emailDomains"
+                             placeholder="company.com, partner.org"
+                             (blur)="updateEmailSettings()" />
+                    </div>
+                  </div>
+                }
+
+                @if (authValidationError()) {
+                  <div class="validation-error">{{ authValidationError() }}</div>
+                }
               </div>
             }
 
-            <button class="btn btn-primary" (click)="saveAuthConfig()" [disabled]="savingAuth()">
+            <button class="btn btn-primary" (click)="saveAuthConfig()"
+                    [disabled]="savingAuth() || (!isPublic() && !hasAnyAuthMethod())">
               {{ savingAuth() ? 'Saving...' : 'Save Authentication Settings' }}
             </button>
           </section>
@@ -418,6 +451,54 @@ import { User } from '../../models/user.model';
       margin-top: 0.5rem;
     }
 
+    .access-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .toggle-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      cursor: pointer;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .toggle-option:has(input:checked) {
+      border-color: #1976d2;
+      background: #e3f2fd;
+    }
+
+    .toggle-option input {
+      margin-top: 0.25rem;
+    }
+
+    .toggle-label {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toggle-label small {
+      color: #666;
+      font-size: 0.75rem;
+    }
+
+    .auth-methods {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .auth-methods h3 {
+      margin-top: 0;
+    }
+
     .auth-options {
       display: flex;
       flex-direction: column;
@@ -447,10 +528,17 @@ import { User } from '../../models/user.model';
     }
 
     .email-settings {
-      background: #f5f5f5;
+      background: #fff;
       padding: 1rem;
       border-radius: 4px;
       margin: 1rem 0;
+      border: 1px solid #e0e0e0;
+    }
+
+    .validation-error {
+      color: #d32f2f;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
     }
 
     .admin-list {
@@ -717,12 +805,14 @@ export class SiteDetailComponent implements OnInit {
   emailDomains = '';
   newAdminEmail = '';
 
-  authOptions = [
-    { type: 'anonymous' as AuthType, label: 'Public Access', description: 'Anyone can view without logging in' },
-    { type: 'google' as AuthType, label: 'Google Sign-In', description: 'Require Google account' },
-    { type: 'microsoft' as AuthType, label: 'Microsoft Sign-In', description: 'Require Microsoft account' },
+  // Auth method options (excluding anonymous, which is handled by public/authenticated toggle)
+  authMethodOptions = [
+    { type: 'google' as AuthType, label: 'Google Sign-In', description: 'Sign in with Google account' },
+    { type: 'microsoft' as AuthType, label: 'Microsoft Sign-In', description: 'Sign in with Microsoft account' },
     { type: 'email' as AuthType, label: 'Email Verification', description: 'Verify via email link' }
   ];
+
+  authValidationError = signal<string | null>(null);
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -799,6 +889,44 @@ export class SiteDetailComponent implements OnInit {
     return this.authConfigs.some(c => c.auth_type === type && c.enabled);
   }
 
+  isPublic(): boolean {
+    return this.isAuthEnabled('anonymous');
+  }
+
+  setPublicAccess(isPublic: boolean) {
+    if (isPublic) {
+      // Enable anonymous, disable other auth methods
+      const anonymousConfig = this.authConfigs.find(c => c.auth_type === 'anonymous');
+      if (anonymousConfig) {
+        anonymousConfig.enabled = true;
+      } else {
+        this.authConfigs.push({
+          id: '',
+          site_id: this.site()!.id,
+          auth_type: 'anonymous',
+          enabled: true
+        });
+      }
+      // Disable all other auth methods
+      this.authConfigs.forEach(c => {
+        if (c.auth_type !== 'anonymous') {
+          c.enabled = false;
+        }
+      });
+    } else {
+      // Disable anonymous
+      const anonymousConfig = this.authConfigs.find(c => c.auth_type === 'anonymous');
+      if (anonymousConfig) {
+        anonymousConfig.enabled = false;
+      }
+    }
+    this.authValidationError.set(null);
+  }
+
+  hasAnyAuthMethod(): boolean {
+    return this.authConfigs.some(c => c.auth_type !== 'anonymous' && c.enabled);
+  }
+
   toggleAuth(type: AuthType, event: Event) {
     const checked = (event.target as HTMLInputElement).checked;
     const existing = this.authConfigs.find(c => c.auth_type === type);
@@ -813,6 +941,7 @@ export class SiteDetailComponent implements OnInit {
         enabled: true
       });
     }
+    this.authValidationError.set(null);
   }
 
   updateEmailSettings() {
@@ -823,7 +952,14 @@ export class SiteDetailComponent implements OnInit {
     const currentSite = this.site();
     if (!currentSite) return;
 
+    // Validate: if not public, must have at least one auth method
+    if (!this.isPublic() && !this.hasAnyAuthMethod()) {
+      this.authValidationError.set('Please select at least one authentication method');
+      return;
+    }
+
     this.savingAuth.set(true);
+    this.authValidationError.set(null);
 
     const enabledConfigs = this.authConfigs.filter(c => c.enabled).map(c => ({
       auth_type: c.auth_type,
