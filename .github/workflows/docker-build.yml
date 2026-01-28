@@ -24,8 +24,9 @@ jobs:
           push: false
           tags: piglet:test
 
-  # Release job only runs on main branch pushes
+  # Release job only runs on main branch pushes after successful build
   release:
+    needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
