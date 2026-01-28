@@ -15,6 +15,26 @@ Piglet is a static documentation hosting platform with configurable per-site aut
   - `src/app/models/` - TypeScript interfaces
   - `src/app/guards/` - Route guards for authentication
 
+## Angular Component Guidelines
+
+When creating or modifying Angular components, always use separate files for:
+- **Template**: `component-name.component.html`
+- **Styles**: `component-name.component.scss`
+- **Logic**: `component-name.component.ts`
+
+Use `templateUrl` and `styleUrl` in the component decorator instead of inline `template` and `styles`.
+
+Example component structure:
+```typescript
+@Component({
+  selector: 'app-example',
+  templateUrl: './example.component.html',
+  styleUrl: './example.component.scss',
+  imports: [CommonModule]
+})
+export class ExampleComponent { }
+```
+
 - `server/` - Express API server
   - `server/routes/` - API route handlers (admin, auth, health)
   - `server/middleware/` - Express middleware (auth, site-resolver, site-auth, static-serve)

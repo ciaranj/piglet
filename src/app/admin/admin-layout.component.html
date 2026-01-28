@@ -1,0 +1,39 @@
+<div class="admin-layout">
+  <nav class="sidebar">
+    <div class="logo">
+      <h1>Piglet</h1>
+      <span class="subtitle">Documentation Admin</span>
+    </div>
+
+    <ul class="nav-links">
+      <li>
+        <a routerLink="/admin/sites" routerLinkActive="active">
+          <span class="icon">📄</span>
+          Sites
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/admins" routerLinkActive="active">
+          <span class="icon">👤</span>
+          Administrators
+        </a>
+      </li>
+    </ul>
+
+    <div class="user-section">
+      @if (authService.user(); as user) {
+        <div class="user-info">
+          <strong>{{ user.display_name || 'Admin' }}</strong>
+          <span class="email">{{ user.email }}</span>
+        </div>
+      }
+      <button class="btn btn-logout" (click)="logout()">
+        Logout
+      </button>
+    </div>
+  </nav>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

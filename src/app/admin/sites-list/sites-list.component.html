@@ -1,0 +1,114 @@
+<div class="sites-list">
+  <header class="page-header">
+    <h1>Documentation Sites</h1>
+    <button class="btn btn-primary" (click)="showCreateDialog = true">
+      + New Site
+    </button>
+  </header>
+
+  @if (sitesService.loading()) {
+    <div class="loading">Loading sites...</div>
+  } @else {
+    <div class="sites-grid">
+      @for (site of sitesService.sites(); track site.id) {
+        <div class="site-card">
+          <div class="site-header">
+            <h2>{{ site.name }}</h2>
+            <a [href]="site.path" target="_blank" class="site-path">{{ site.path }}</a>
+          </div>
+          <div class="site-auth">
+            @for (config of site.auth_configs; track config.id) {
+              @if (config.enabled) {
+                <span class="auth-badge" [class]="config.auth_type">
+                  {{ formatAuthType(config.auth_type) }}
+                </span>
+              }
+            }
+          </div>
+          <div class="site-actions">
+            <a [routerLink]="['/admin/sites', site.id]" class="btn btn-secondary">
+              Manage
+            </a>
+            <button class="btn btn-danger" (click)="confirmDelete(site)">
+              Delete
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <p>No documentation sites yet.</p>
+          <button class="btn btn-primary" (click)="showCreateDialog = true">
+            Create your first site
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  @if (showCreateDialog) {
+    <div class="dialog-overlay" (click)="showCreateDialog = false">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <h2>Create New Site</h2>
+        <form (ngSubmit)="createSite()">
+          <div class="form-group">
+            <label for="name">Site Name</label>
+            <input
+              id="name"
+              type="text"
+              [(ngModel)]="newSite.name"
+              name="name"
+              required
+              placeholder="My Documentation"
+            />
+          </div>
+          <div class="form-group">
+            <label for="path">URL Path</label>
+            <input
+              id="path"
+              type="text"
+              [(ngModel)]="newSite.path"
+              name="path"
+              required
+              placeholder="/docs"
+              pattern="^/[a-zA-Z0-9/_.-]*$"
+            />
+            <small>Must start with /. Example: /help, /docs/v2</small>
+          </div>
+          <div class="form-group">
+            <label>Initial Authentication</label>
+            <select [(ngModel)]="newSite.authType" name="authType">
+              <option value="anonymous">Anonymous (Public)</option>
+              <option value="google">Google Sign-In</option>
+              <option value="microsoft">Microsoft Sign-In</option>
+              <option value="email">Email Verification</option>
+            </select>
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="btn btn-secondary" (click)="showCreateDialog = false">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="creating()">
+              {{ creating() ? 'Creating...' : 'Create Site' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (siteToDelete) {
+    <div class="dialog-overlay" (click)="siteToDelete = null">
+      <div class="dialog dialog-danger" (click)="$event.stopPropagation()">
+        <h2>Delete Site</h2>
+        <p>Are you sure you want to delete <strong>{{ siteToDelete.name }}</strong>?</p>
+        <p class="warning">This will permanently remove all uploaded content.</p>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" (click)="siteToDelete = null">Cancel</button>
+          <button class="btn btn-danger" (click)="deleteSite()" [disabled]="deleting()">
+            {{ deleting() ? 'Deleting...' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

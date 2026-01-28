@@ -1,0 +1,83 @@
+<div class="admins-list">
+  <header class="page-header">
+    <h1>Global Administrators</h1>
+    <p class="description">
+      Global administrators can manage all documentation sites and other administrators.
+    </p>
+  </header>
+
+  <div class="card">
+    <ul class="admin-list">
+      @for (admin of adminService.admins(); track admin.id) {
+        <li>
+          <div class="admin-info">
+            <strong>{{ admin.display_name || 'No name' }}</strong>
+            <span class="email">{{ admin.email }}</span>
+            @if (admin.id === authService.user()?.id) {
+              <span class="badge">You</span>
+            }
+          </div>
+          <div class="admin-actions">
+            @if (admin.id !== authService.user()?.id) {
+              <button
+                class="btn btn-danger btn-small"
+                (click)="confirmRemove(admin)"
+              >
+                Remove
+              </button>
+            }
+          </div>
+        </li>
+      } @empty {
+        <li class="empty">No administrators configured.</li>
+      }
+    </ul>
+
+    <div class="add-admin">
+      <h3>Add Administrator</h3>
+      <div class="add-form">
+        <input
+          type="email"
+          [(ngModel)]="newAdminEmail"
+          placeholder="admin@example.com"
+          (keyup.enter)="addAdmin()"
+        />
+        <button
+          class="btn btn-primary"
+          (click)="addAdmin()"
+          [disabled]="!newAdminEmail || adding()"
+        >
+          {{ adding() ? 'Adding...' : 'Add Admin' }}
+        </button>
+      </div>
+      @if (addError()) {
+        <div class="error-message">{{ addError() }}</div>
+      }
+    </div>
+  </div>
+
+  @if (adminToRemove) {
+    <div class="dialog-overlay" (click)="adminToRemove = null">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <h2>Remove Administrator</h2>
+        <p>
+          Are you sure you want to remove
+          <strong>{{ adminToRemove.display_name || adminToRemove.email }}</strong>
+          as a global administrator?
+        </p>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" (click)="adminToRemove = null">
+            Cancel
+          </button>
+          <button
+            class="btn btn-danger"
+            (click)="removeAdmin()"
+            [disabled]="removing()"
+          >
+            {{ removing() ? 'Removing...' : 'Remove' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

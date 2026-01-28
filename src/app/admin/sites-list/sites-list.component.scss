@@ -1,0 +1,195 @@
+.sites-list {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.75rem;
+  }
+}
+
+.sites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.site-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.site-header {
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+}
+
+.site-path {
+  color: #666;
+  font-size: 0.875rem;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.site-auth {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.auth-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: #e0e0e0;
+
+  &.anonymous { background: #e8f5e9; color: #2e7d32; }
+  &.google { background: #fff3e0; color: #e65100; }
+  &.microsoft { background: #e3f2fd; color: #1565c0; }
+  &.email { background: #f3e5f5; color: #7b1fa2; }
+}
+
+.site-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  grid-column: 1 / -1;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: white;
+
+  &:hover {
+    background: #1565c0;
+  }
+}
+
+.btn-secondary {
+  background: #e0e0e0;
+  color: #333;
+
+  &:hover {
+    background: #d0d0d0;
+  }
+}
+
+.btn-danger {
+  background: #d32f2f;
+  color: white;
+
+  &:hover {
+    background: #c62828;
+  }
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  h2 {
+    margin: 0 0 1rem 0;
+  }
+}
+
+.dialog-danger .warning {
+  color: #d32f2f;
+  font-size: 0.875rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+  }
+
+  input,
+  select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #666;
+    font-size: 0.75rem;
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
