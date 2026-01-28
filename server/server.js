@@ -18,6 +18,10 @@ const staticServe = require('./middleware/static-serve');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy - required when behind reverse proxy (Traefik, nginx, etc.)
+// This allows Express to correctly read X-Forwarded-* headers
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false, // Disable for static docs that may have inline scripts
@@ -26,7 +30,7 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+  origin: process.env.BASE_URL || 'http://localhost:4200',
   credentials: true
 }));
 
@@ -43,6 +47,8 @@ app.use(session({
   cookie: {
     secure: process.env.COOKIE_SECURE === 'true' || (process.env.COOKIE_SECURE !== 'false' && process.env.NODE_ENV === 'production'),
     httpOnly: true,
+    sameSite: process.env.COOKIE_SAMESITE || 'lax', // Required for OAuth flows
+    domain: process.env.COOKIE_DOMAIN || undefined, // Optional: set for subdomain cookie sharing
     maxAge: parseInt(process.env.SESSION_MAX_AGE) || 86400000 // 24 hours
   }
 }));
