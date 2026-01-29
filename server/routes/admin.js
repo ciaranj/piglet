@@ -115,7 +115,10 @@ router.post('/sites', authMiddleware.requireAnyAdmin, (req, res) => {
 
     // Make the creator a site admin (unless they're already a global admin)
     if (!req.isGlobalAdmin) {
+      console.log(`[createSite] Adding site admin: site=${site.id}, user=${req.user.id} (${req.user.email})`);
       db.addSiteAdmin(uuidv4(), site.id, req.user.id, req.user.id);
+    } else {
+      console.log(`[createSite] Skipping site admin add for global admin: user=${req.user.id} (${req.user.email})`);
     }
 
     res.status(201).json({
@@ -526,6 +529,7 @@ router.post('/sites/:id/admins', authMiddleware.requireSiteAdmin, (req, res) => 
       return res.status(404).json({ error: 'User not found' });
     }
 
+    console.log(`[addSiteAdmin] Adding site admin: site=${site.id}, user=${targetUser.id} (${targetUser.email}), addedBy=${req.user.id}`);
     db.addSiteAdmin(uuidv4(), site.id, targetUser.id, req.user.id);
 
     res.status(201).json({ success: true, user: targetUser });

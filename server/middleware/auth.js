@@ -84,7 +84,10 @@ function requireSiteAdmin(req, res, next) {
     return res.status(400).json({ error: 'Site ID required' });
   }
 
-  if (!db.isSiteAdmin(siteId, user.id)) {
+  const isSiteAdmin = db.isSiteAdmin(siteId, user.id);
+  console.log(`[requireSiteAdmin] Checking user ${user.id} (${user.email}) for site ${siteId}: ${isSiteAdmin}`);
+
+  if (!isSiteAdmin) {
     return res.status(403).json({ error: 'Site admin privileges required' });
   }
 
