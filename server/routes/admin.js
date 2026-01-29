@@ -198,8 +198,8 @@ router.put('/sites/:id', authMiddleware.requireSiteAdmin, (req, res) => {
   }
 });
 
-// Delete site (global admin only)
-router.delete('/sites/:id', authMiddleware.requireAdmin, (req, res) => {
+// Delete site (site admin or global admin)
+router.delete('/sites/:id', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
