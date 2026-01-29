@@ -105,8 +105,11 @@ router.get('/entra/callback', async (req, res) => {
       });
     }
 
-    // Check if user is a global admin (auto-promote first user if no admins exist)
-    if (!db.isGlobalAdmin(user.id)) {
+    // Check if user has admin privileges (auto-promote first user if no admins exist)
+    const isGlobalAdmin = db.isGlobalAdmin(user.id);
+    const isSiteAdminRole = db.isSiteAdminRole(user.id);
+
+    if (!isGlobalAdmin && !isSiteAdminRole) {
       if (!db.hasAnyGlobalAdmins()) {
         // First user to log in becomes a global admin
         db.addGlobalAdmin(user.id, user.id);
