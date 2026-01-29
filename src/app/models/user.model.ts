@@ -14,6 +14,8 @@ export interface Session {
   auth_type?: string;
   site_id?: string | null;
   is_admin?: boolean;
+  is_global_admin?: boolean;
+  is_site_admin_role?: boolean;
 }
 
 export interface AuthMethods {

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './guards/admin.guard';
+import { globalAdminGuard } from './guards/global-admin.guard';
 
 export const routes: Routes = [
   // Admin portal routes
@@ -23,7 +24,8 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        loadComponent: () => import('./admin/users-list/users-list.component').then(m => m.UsersListComponent)
+        loadComponent: () => import('./admin/users-list/users-list.component').then(m => m.UsersListComponent),
+        canActivate: [globalAdminGuard]
       }
     ]
   },

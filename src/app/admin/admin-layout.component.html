@@ -12,12 +12,14 @@
           Sites
         </a>
       </li>
-      <li>
-        <a routerLink="/admin/users" routerLinkActive="active">
-          <span class="icon">👥</span>
-          Users
-        </a>
-      </li>
+      @if (authService.isGlobalAdmin()) {
+        <li>
+          <a routerLink="/admin/users" routerLinkActive="active">
+            <span class="icon">👥</span>
+            Users
+          </a>
+        </li>
+      }
     </ul>
 
     <div class="user-section">

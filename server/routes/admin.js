@@ -38,8 +38,7 @@ const upload = multer({
 router.get('/sites', authMiddleware.requireAnyAdmin, (req, res) => {
   try {
     let sites;
-    if (req.isGlobalAdmin || req.isSiteAdminRole) {
-      // Global admins and site admin role users see all sites
+    if (req.isGlobalAdmin) {
       sites = db.getAllSites();
     } else {
       // Users with specific site admin assignments only see their sites

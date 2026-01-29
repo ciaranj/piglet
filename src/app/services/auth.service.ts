@@ -14,6 +14,7 @@ export class AuthService {
   readonly loading = this.loadingSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.sessionSignal()?.authenticated ?? false);
   readonly isAdmin = computed(() => this.sessionSignal()?.is_admin ?? false);
+  readonly isGlobalAdmin = computed(() => this.sessionSignal()?.is_global_admin ?? false);
   readonly user = computed(() => this.sessionSignal()?.user ?? null);
 
   constructor(private http: HttpClient) {
