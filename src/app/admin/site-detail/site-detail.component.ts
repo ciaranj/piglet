@@ -48,12 +48,12 @@ export class SiteDetailComponent implements OnInit {
   emailDomains = '';
   selectedUserId = '';
 
-  // Filter users to show only those who have admin privileges but aren't already site admins for this site
+  // Filter users to show only site admin role users (not global admins, they already have access)
   availableUsers = computed(() => {
     const currentAdminIds = this.siteAdmins().map(a => a.id);
     return this.allUsers().filter(user =>
-      // User must have admin privileges (global admin or site admin role)
-      (user.is_global_admin || user.is_site_admin_role) &&
+      // User must have site admin role (no point showing global admins)
+      user.is_site_admin_role &&
       // User must not already be an admin of this site
       !currentAdminIds.includes(user.id)
     );

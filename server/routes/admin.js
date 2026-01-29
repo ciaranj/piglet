@@ -557,8 +557,8 @@ router.delete('/sites/:id/admins/:userId', authMiddleware.requireSiteAdmin, (req
 
 // ==================== Users ====================
 
-// List all users with their roles (global admin only)
-router.get('/users', authMiddleware.requireAdmin, (req, res) => {
+// List all users with their roles (any admin can access)
+router.get('/users', authMiddleware.requireAnyAdmin, (req, res) => {
   try {
     const users = db.getAllUsers();
     const usersWithRoles = users.map(user => {
