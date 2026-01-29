@@ -1,7 +1,7 @@
 {
   "name": "piglet",
   "license": "Apache-2.0",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Static documentation hosting platform",
   "scripts": {
     "ng": "ng",
