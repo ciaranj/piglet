@@ -38,11 +38,11 @@ const upload = multer({
 router.get('/sites', authMiddleware.requireAnyAdmin, (req, res) => {
   try {
     let sites;
-    if (req.isGlobalAdmin) {
-      // Global admins see all sites
+    if (req.isGlobalAdmin || req.isSiteAdminRole) {
+      // Global admins and site admin role users see all sites
       sites = db.getAllSites();
     } else {
-      // Site admins only see sites they administer
+      // Users with specific site admin assignments only see their sites
       sites = db.getSitesByAdmin(req.user.id);
     }
 
@@ -560,10 +560,12 @@ router.get('/users', authMiddleware.requireAdmin, (req, res) => {
     const users = db.getAllUsers();
     const usersWithRoles = users.map(user => {
       const isGlobalAdmin = db.isGlobalAdmin(user.id);
+      const isSiteAdminRole = db.isSiteAdminRole(user.id);
       const adminSites = db.getSitesByAdmin(user.id);
       return {
         ...user,
         is_global_admin: isGlobalAdmin,
+        is_site_admin_role: isSiteAdminRole,
         site_admin_count: adminSites.length,
         admin_sites: adminSites.map(s => ({ id: s.id, name: s.name, path: s.path }))
       };
@@ -584,16 +586,36 @@ router.get('/users/:userId', authMiddleware.requireAdmin, (req, res) => {
     }
 
     const isGlobalAdmin = db.isGlobalAdmin(user.id);
+    const isSiteAdminRole = db.isSiteAdminRole(user.id);
     const adminSites = db.getSitesByAdmin(user.id);
 
     res.json({
       ...user,
       is_global_admin: isGlobalAdmin,
+      is_site_admin_role: isSiteAdminRole,
       admin_sites: adminSites.map(s => ({ id: s.id, name: s.name, path: s.path }))
     });
   } catch (error) {
     console.error('Error getting user:', error);
     res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// Set site admin role (global admin only)
+router.put('/users/:userId/site-admin-role', authMiddleware.requireAdmin, (req, res) => {
+  try {
+    const user = db.getUserById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { enabled } = req.body;
+    db.setSiteAdminRole(user.id, enabled);
+
+    res.json({ success: true, is_site_admin_role: enabled });
+  } catch (error) {
+    console.error('Error setting site admin role:', error);
+    res.status(500).json({ error: 'Failed to set site admin role' });
   }
 });
 

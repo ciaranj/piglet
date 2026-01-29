@@ -48,4 +48,11 @@ export class AdminService {
   getUserById(userId: string): Observable<any> {
     return this.http.get<any>(`${API_BASE}/users/${userId}`);
   }
+
+  setSiteAdminRole(userId: string, enabled: boolean): Observable<{ success: boolean; is_site_admin_role: boolean }> {
+    return this.http.put<{ success: boolean; is_site_admin_role: boolean }>(
+      `${API_BASE}/users/${userId}/site-admin-role`,
+      { enabled }
+    );
+  }
 }

@@ -92,7 +92,7 @@ function requireSiteAdmin(req, res, next) {
   next();
 }
 
-// Middleware to require any admin privileges (global admin or site admin of at least one site)
+// Middleware to require any admin privileges (global admin, site admin role, or site admin of at least one site)
 function requireAnyAdmin(req, res, next) {
   const sessionId = req.session?.pigletSession;
 
@@ -110,16 +110,18 @@ function requireAnyAdmin(req, res, next) {
     return res.status(401).json({ error: 'User not found' });
   }
 
-  // Check if user is a global admin or site admin of at least one site
+  // Check if user has any admin privileges
   const isGlobalAdmin = db.isGlobalAdmin(user.id);
+  const isSiteAdminRole = db.isSiteAdminRole(user.id);
   const adminSites = db.getSitesByAdmin(user.id);
 
-  if (!isGlobalAdmin && adminSites.length === 0) {
+  if (!isGlobalAdmin && !isSiteAdminRole && adminSites.length === 0) {
     return res.status(403).json({ error: 'Admin privileges required' });
   }
 
   req.user = user;
   req.isGlobalAdmin = isGlobalAdmin;
+  req.isSiteAdminRole = isSiteAdminRole;
   next();
 }
 

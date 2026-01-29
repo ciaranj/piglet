@@ -56,17 +56,25 @@
                   @if (user.is_global_admin) {
                     <span class="badge global-admin">Global Admin</span>
                   }
-                  @if (user.site_admin_count > 0 && !user.is_global_admin) {
+                  @if (user.is_site_admin_role && !user.is_global_admin) {
                     <span class="badge site-admin">Site Admin</span>
                   }
-                  @if (!user.is_global_admin && user.site_admin_count === 0) {
+                  @if (!user.is_global_admin && !user.is_site_admin_role && user.site_admin_count === 0) {
                     <span class="badge regular">Regular User</span>
                   }
                 </div>
               </td>
               <td>
-                @if (user.is_global_admin) {
+                @if (user.is_global_admin || user.is_site_admin_role) {
                   <span class="access-info">All sites</span>
+                  @if (user.site_admin_count > 0) {
+                    <div class="site-list">
+                      <small>Specific assignments:</small>
+                      @for (site of user.admin_sites; track site.id) {
+                        <span class="site-badge" [title]="site.path">{{ site.name }}</span>
+                      }
+                    </div>
+                  }
                 } @else if (user.site_admin_count > 0) {
                   <div class="site-list">
                     @for (site of user.admin_sites; track site.id) {
@@ -125,8 +133,25 @@
           </div>
 
           <div class="role-section">
-            <h4>Site Administrator</h4>
-            <p class="description">Assign this user as an administrator for specific sites.</p>
+            <h4>Site Administrator Role</h4>
+            <p class="description">Site administrators can create and manage sites.</p>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                [checked]="selectedUser.is_site_admin_role"
+                [disabled]="selectedUser.is_global_admin"
+                (change)="toggleSiteAdminRole($event)"
+              />
+              <span>Grant site administrator role</span>
+            </label>
+            @if (selectedUser.is_global_admin) {
+              <p class="info-text">Global administrators automatically have site admin capabilities.</p>
+            }
+          </div>
+
+          <div class="role-section">
+            <h4>Site-Specific Access</h4>
+            <p class="description">Assign access to specific sites (optional for site administrators).</p>
 
             @if (selectedUser.is_global_admin) {
               <div class="info-message">

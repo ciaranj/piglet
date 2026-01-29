@@ -42,8 +42,8 @@ export class UsersListComponent implements OnInit {
     if (roleFilterValue !== 'all') {
       filtered = filtered.filter(user => {
         if (roleFilterValue === 'global_admin') return user.is_global_admin;
-        if (roleFilterValue === 'site_admin') return !user.is_global_admin && user.site_admin_count > 0;
-        if (roleFilterValue === 'regular') return !user.is_global_admin && user.site_admin_count === 0;
+        if (roleFilterValue === 'site_admin') return !user.is_global_admin && (user.is_site_admin_role || user.site_admin_count > 0);
+        if (roleFilterValue === 'regular') return !user.is_global_admin && !user.is_site_admin_role && user.site_admin_count === 0;
         return true;
       });
     }
@@ -141,6 +141,29 @@ export class UsersListComponent implements OnInit {
         }
       });
     }
+  }
+
+  toggleSiteAdminRole(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.savingRole.set(true);
+    this.roleError.set(null);
+
+    this.adminService.setSiteAdminRole(this.selectedUser.id, checked).subscribe({
+      next: () => {
+        this.savingRole.set(false);
+        this.selectedUser.is_site_admin_role = checked;
+        // Update the user in the list
+        this.users.update(users =>
+          users.map(u => u.id === this.selectedUser.id ? { ...u, is_site_admin_role: checked } : u)
+        );
+      },
+      error: (err) => {
+        this.savingRole.set(false);
+        this.roleError.set(err.error?.error || 'Failed to update site admin role');
+        // Revert checkbox
+        (event.target as HTMLInputElement).checked = !checked;
+      }
+    });
   }
 
   addSiteAdmin() {

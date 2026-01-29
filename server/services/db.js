@@ -10,14 +10,13 @@ let db = null;
 // Schema migrations - add new migrations to the end of this array
 // Each migration should have: version (incrementing), description, and up function
 const migrations = [
-  // Example migration (uncomment when needed):
-  // {
-  //   version: 1,
-  //   description: 'Add new_column to sites table',
-  //   up: (database) => {
-  //     database.exec(`ALTER TABLE sites ADD COLUMN new_column TEXT`);
-  //   }
-  // }
+  {
+    version: 1,
+    description: 'Add is_site_admin flag to users table',
+    up: (database) => {
+      database.exec(`ALTER TABLE users ADD COLUMN is_site_admin INTEGER DEFAULT 0`);
+    }
+  }
 ];
 
 function getDb() {
@@ -402,6 +401,16 @@ function removeGlobalAdmin(userId) {
   return run('DELETE FROM global_admins WHERE user_id = ?', [userId]);
 }
 
+// Site admin role (general privilege, not site-specific)
+function isSiteAdminRole(userId) {
+  const user = get('SELECT is_site_admin FROM users WHERE id = ?', [userId]);
+  return user ? !!user.is_site_admin : false;
+}
+
+function setSiteAdminRole(userId, isSiteAdmin) {
+  run('UPDATE users SET is_site_admin = ? WHERE id = ?', [isSiteAdmin ? 1 : 0, userId]);
+}
+
 function isSiteAdmin(siteId, userId) {
   return !!get(
     'SELECT 1 FROM site_admins WHERE site_id = ? AND user_id = ?',
@@ -579,6 +588,8 @@ module.exports = {
   getGlobalAdmins,
   addGlobalAdmin,
   removeGlobalAdmin,
+  isSiteAdminRole,
+  setSiteAdminRole,
   isSiteAdmin,
   getSiteAdmins,
   getSitesByAdmin,
