@@ -92,6 +92,37 @@ function requireSiteAdmin(req, res, next) {
   next();
 }
 
+// Middleware to require any admin privileges (global admin or site admin of at least one site)
+function requireAnyAdmin(req, res, next) {
+  const sessionId = req.session?.pigletSession;
+
+  if (!sessionId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  const session = db.getSessionById(sessionId);
+  if (!session) {
+    return res.status(401).json({ error: 'Session expired' });
+  }
+
+  const user = db.getUserById(session.user_id);
+  if (!user) {
+    return res.status(401).json({ error: 'User not found' });
+  }
+
+  // Check if user is a global admin or site admin of at least one site
+  const isGlobalAdmin = db.isGlobalAdmin(user.id);
+  const adminSites = db.getSitesByAdmin(user.id);
+
+  if (!isGlobalAdmin && adminSites.length === 0) {
+    return res.status(403).json({ error: 'Admin privileges required' });
+  }
+
+  req.user = user;
+  req.isGlobalAdmin = isGlobalAdmin;
+  next();
+}
+
 // Get current user from session if exists (doesn't require auth)
 function loadUser(req, res, next) {
   const sessionId = req.session?.pigletSession;
@@ -114,5 +145,6 @@ module.exports = {
   requireAuth,
   requireAdmin,
   requireSiteAdmin,
+  requireAnyAdmin,
   loadUser
 };

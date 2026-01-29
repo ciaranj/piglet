@@ -39,4 +39,13 @@ export class AdminService {
       })
     );
   }
+
+  // User management
+  getAllUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${API_BASE}/users`);
+  }
+
+  getUserById(userId: string): Observable<any> {
+    return this.http.get<any>(`${API_BASE}/users/${userId}`);
+  }
 }

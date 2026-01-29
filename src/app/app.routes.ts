@@ -22,8 +22,8 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/site-detail/site-detail.component').then(m => m.SiteDetailComponent)
       },
       {
-        path: 'admins',
-        loadComponent: () => import('./admin/admins-list/admins-list.component').then(m => m.AdminsListComponent)
+        path: 'users',
+        loadComponent: () => import('./admin/users-list/users-list.component').then(m => m.UsersListComponent)
       }
     ]
   },

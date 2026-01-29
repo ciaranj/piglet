@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
 import { SitesService } from '../../services/sites.service';
 import { UploadService } from '../../services/upload.service';
+import { AdminService } from '../../services/admin.service';
 import { Site, AuthConfig, AuthType, EmailSettings, ContentVersion } from '../../models/site.model';
 import { User } from '../../models/user.model';
 
@@ -18,10 +19,12 @@ export class SiteDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private sitesService = inject(SitesService);
+  private adminService = inject(AdminService);
   uploadService = inject(UploadService);
 
   site = signal<Site | null>(null);
   siteAdmins = signal<User[]>([]);
+  allUsers = signal<any[]>([]);
   versions = signal<ContentVersion[]>([]);
   activeVersion = signal<ContentVersion | null>(null);
   loading = signal(true);
@@ -43,7 +46,18 @@ export class SiteDetailComponent implements OnInit {
   authConfigs: AuthConfig[] = [];
   emailFlowType: 'magic_link' | 'register' = 'magic_link';
   emailDomains = '';
-  newAdminEmail = '';
+  selectedUserId = '';
+
+  // Filter users to show only those who are admins but not yet site admins for this site
+  availableUsers = computed(() => {
+    const currentAdminIds = this.siteAdmins().map(a => a.id);
+    return this.allUsers().filter(user =>
+      // User must be either a global admin or a site admin of at least one site
+      (user.is_global_admin || user.site_admin_count > 0) &&
+      // User must not already be an admin of this site
+      !currentAdminIds.includes(user.id)
+    );
+  });
 
   // Auth method options (excluding anonymous, which is handled by public/authenticated toggle)
   authMethodOptions = [
@@ -59,6 +73,18 @@ export class SiteDetailComponent implements OnInit {
     if (id) {
       this.loadSite(id);
     }
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.adminService.getAllUsers().subscribe({
+      next: (users) => {
+        this.allUsers.set(users);
+      },
+      error: (err) => {
+        console.error('Failed to load users:', err);
+      }
+    });
   }
 
   loadSite(id: string) {
@@ -360,12 +386,15 @@ export class SiteDetailComponent implements OnInit {
 
   addSiteAdmin() {
     const currentSite = this.site();
-    if (!currentSite || !this.newAdminEmail) return;
+    if (!currentSite || !this.selectedUserId) return;
 
-    this.sitesService.addSiteAdmin(currentSite.id, this.newAdminEmail).subscribe({
+    const selectedUser = this.allUsers().find(u => u.id === this.selectedUserId);
+    if (!selectedUser) return;
+
+    this.sitesService.addSiteAdmin(currentSite.id, selectedUser.email).subscribe({
       next: (response) => {
         this.siteAdmins.update(admins => [...admins, response.user]);
-        this.newAdminEmail = '';
+        this.selectedUserId = '';
       },
       error: (err) => {
         alert(err.error?.error || 'Failed to add admin');

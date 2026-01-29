@@ -175,8 +175,20 @@
         </ul>
 
         <div class="add-admin">
-          <input type="email" [(ngModel)]="newAdminEmail" placeholder="admin@example.com" />
-          <button class="btn btn-secondary" (click)="addSiteAdmin()" [disabled]="!newAdminEmail">
+          <select [(ngModel)]="selectedUserId" class="user-select">
+            <option value="">Select an administrator...</option>
+            @for (user of availableUsers(); track user.id) {
+              <option [value]="user.id">
+                {{ user.display_name || user.email }}
+                @if (user.is_global_admin) {
+                  (Global Admin)
+                } @else if (user.site_admin_count > 0) {
+                  (Site Admin)
+                }
+              </option>
+            }
+          </select>
+          <button class="btn btn-secondary" (click)="addSiteAdmin()" [disabled]="!selectedUserId">
             Add Admin
           </button>
         </div>

@@ -295,11 +295,12 @@
   display: flex;
   gap: 0.5rem;
 
-  input {
+  .user-select {
     flex: 1;
     padding: 0.5rem;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-size: 0.875rem;
   }
 }
 

@@ -318,6 +318,10 @@ function getUserByEmail(email) {
   return get('SELECT * FROM users WHERE email = ?', [email]);
 }
 
+function getAllUsers() {
+  return all('SELECT * FROM users ORDER BY created_at DESC');
+}
+
 function createUser(user) {
   run(
     'INSERT INTO users (id, email, email_verified, display_name) VALUES (?, ?, ?, ?)',
@@ -423,6 +427,15 @@ function addSiteAdmin(id, siteId, userId, addedBy) {
 
 function removeSiteAdmin(siteId, userId) {
   return run('DELETE FROM site_admins WHERE site_id = ? AND user_id = ?', [siteId, userId]);
+}
+
+function getSitesByAdmin(userId) {
+  return all(`
+    SELECT s.*
+    FROM sites s
+    JOIN site_admins sa ON s.id = sa.site_id
+    WHERE sa.user_id = ?
+  `, [userId]);
 }
 
 // Session operations
@@ -553,6 +566,7 @@ module.exports = {
   // Users
   getUserById,
   getUserByEmail,
+  getAllUsers,
   createUser,
   updateUser,
   getUserIdentity,
@@ -567,6 +581,7 @@ module.exports = {
   removeGlobalAdmin,
   isSiteAdmin,
   getSiteAdmins,
+  getSitesByAdmin,
   addSiteAdmin,
   removeSiteAdmin,
 

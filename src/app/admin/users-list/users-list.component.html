@@ -1,0 +1,193 @@
+<div class="users-list">
+  <header class="page-header">
+    <h1>User Management</h1>
+    <p class="description">
+      View and manage user roles and permissions.
+    </p>
+  </header>
+
+  @if (loading()) {
+    <div class="loading">Loading users...</div>
+  } @else {
+    <div class="card">
+      <div class="filters">
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Search by name or email..."
+          class="search-input"
+        />
+        <select
+          [ngModel]="roleFilter()"
+          (ngModelChange)="roleFilter.set($event)"
+          class="role-filter"
+        >
+          <option value="all">All Users</option>
+          <option value="global_admin">Global Admins</option>
+          <option value="site_admin">Site Admins</option>
+          <option value="regular">Regular Users</option>
+        </select>
+      </div>
+
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Roles</th>
+            <th>Site Admin Access</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filteredUsers(); track user.id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <strong>{{ user.display_name || 'No name' }}</strong>
+                  <span class="email">{{ user.email }}</span>
+                  @if (!user.email_verified) {
+                    <span class="badge unverified">Unverified</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="roles">
+                  @if (user.is_global_admin) {
+                    <span class="badge global-admin">Global Admin</span>
+                  }
+                  @if (user.site_admin_count > 0 && !user.is_global_admin) {
+                    <span class="badge site-admin">Site Admin</span>
+                  }
+                  @if (!user.is_global_admin && user.site_admin_count === 0) {
+                    <span class="badge regular">Regular User</span>
+                  }
+                </div>
+              </td>
+              <td>
+                @if (user.is_global_admin) {
+                  <span class="access-info">All sites</span>
+                } @else if (user.site_admin_count > 0) {
+                  <div class="site-list">
+                    @for (site of user.admin_sites; track site.id) {
+                      <span class="site-badge" [title]="site.path">{{ site.name }}</span>
+                    }
+                  </div>
+                } @else {
+                  <span class="access-info muted">None</span>
+                }
+              </td>
+              <td>
+                <div class="actions">
+                  <button
+                    class="btn btn-small btn-secondary"
+                    (click)="manageUser(user)"
+                  >
+                    Manage
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty">No users found.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Manage User Modal -->
+  @if (selectedUser) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Manage User</h2>
+          <button class="modal-close" (click)="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="user-info-section">
+            <h3>{{ selectedUser.display_name || 'No name' }}</h3>
+            <p class="email">{{ selectedUser.email }}</p>
+          </div>
+
+          <div class="role-section">
+            <h4>Global Administrator</h4>
+            <label class="toggle">
+              <input
+                type="checkbox"
+                [checked]="selectedUser.is_global_admin"
+                (change)="toggleGlobalAdmin($event)"
+              />
+              <span>Grant global administrator privileges</span>
+            </label>
+          </div>
+
+          <div class="role-section">
+            <h4>Site Administrator</h4>
+            <p class="description">Assign this user as an administrator for specific sites.</p>
+
+            @if (selectedUser.is_global_admin) {
+              <div class="info-message">
+                Global administrators have access to all sites automatically.
+              </div>
+            } @else {
+              <div class="site-admin-manager">
+                <div class="current-sites">
+                  <strong>Current site access:</strong>
+                  @if (selectedUser.admin_sites.length > 0) {
+                    <ul class="site-list">
+                      @for (site of selectedUser.admin_sites; track site.id) {
+                        <li>
+                          <span>{{ site.name }}</span>
+                          <button
+                            class="btn btn-small btn-danger"
+                            (click)="removeSiteAdmin(site.id)"
+                            [disabled]="savingRole()"
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="muted">No site access</p>
+                  }
+                </div>
+
+                <div class="add-site-admin">
+                  <label for="siteSelect">Add to site:</label>
+                  <div class="add-form">
+                    <select id="siteSelect" [(ngModel)]="selectedSiteId">
+                      <option value="">Select a site...</option>
+                      @for (site of availableSites(); track site.id) {
+                        <option [value]="site.id">{{ site.name }} ({{ site.path }})</option>
+                      }
+                    </select>
+                    <button
+                      class="btn btn-primary btn-small"
+                      (click)="addSiteAdmin()"
+                      [disabled]="!selectedSiteId || savingRole()"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (roleError()) {
+            <div class="error-message">{{ roleError() }}</div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

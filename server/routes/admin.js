@@ -32,15 +32,20 @@ const upload = multer({
   }
 });
 
-// All admin routes require authentication
-router.use(authMiddleware.requireAdmin);
-
 // ==================== Sites ====================
 
-// List all sites
-router.get('/sites', (req, res) => {
+// List sites (filtered by admin access)
+router.get('/sites', authMiddleware.requireAnyAdmin, (req, res) => {
   try {
-    const sites = db.getAllSites();
+    let sites;
+    if (req.isGlobalAdmin) {
+      // Global admins see all sites
+      sites = db.getAllSites();
+    } else {
+      // Site admins only see sites they administer
+      sites = db.getSitesByAdmin(req.user.id);
+    }
+
     const sitesWithAuth = sites.map(site => ({
       ...site,
       auth_configs: db.getSiteAuthConfigs(site.id)
@@ -52,8 +57,8 @@ router.get('/sites', (req, res) => {
   }
 });
 
-// Create site
-router.post('/sites', (req, res) => {
+// Create site (all admins can create)
+router.post('/sites', authMiddleware.requireAnyAdmin, (req, res) => {
   try {
     const { path: sitePath, name, auth_configs } = req.body;
 
@@ -109,6 +114,11 @@ router.post('/sites', (req, res) => {
       });
     }
 
+    // Make the creator a site admin (unless they're already a global admin)
+    if (!req.isGlobalAdmin) {
+      db.addSiteAdmin(uuidv4(), site.id, req.user.id, req.user.id);
+    }
+
     res.status(201).json({
       ...site,
       auth_configs: db.getSiteAuthConfigs(site.id)
@@ -119,8 +129,8 @@ router.post('/sites', (req, res) => {
   }
 });
 
-// Get site details
-router.get('/sites/:id', (req, res) => {
+// Get site details (site admin or global admin)
+router.get('/sites/:id', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -139,8 +149,8 @@ router.get('/sites/:id', (req, res) => {
   }
 });
 
-// Update site
-router.put('/sites/:id', (req, res) => {
+// Update site (site admin or global admin)
+router.put('/sites/:id', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -186,8 +196,8 @@ router.put('/sites/:id', (req, res) => {
   }
 });
 
-// Delete site
-router.delete('/sites/:id', (req, res) => {
+// Delete site (global admin only)
+router.delete('/sites/:id', authMiddleware.requireAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -209,8 +219,8 @@ router.delete('/sites/:id', (req, res) => {
 
 // ==================== Site Content Versions ====================
 
-// List all versions for a site
-router.get('/sites/:id/versions', (req, res) => {
+// List all versions for a site (site admin or global admin)
+router.get('/sites/:id/versions', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -230,8 +240,8 @@ router.get('/sites/:id/versions', (req, res) => {
   }
 });
 
-// Upload new version
-router.post('/sites/:id/upload', upload.single('file'), async (req, res) => {
+// Upload new version (site admin or global admin)
+router.post('/sites/:id/upload', authMiddleware.requireSiteAdmin, upload.single('file'), async (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -301,8 +311,8 @@ router.post('/sites/:id/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Check if site has active content (useful before upload)
-router.get('/sites/:id/versions/active', (req, res) => {
+// Check if site has active content (site admin or global admin)
+router.get('/sites/:id/versions/active', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -327,8 +337,8 @@ router.get('/sites/:id/versions/active', (req, res) => {
   }
 });
 
-// Activate a specific version
-router.put('/sites/:id/versions/:versionId/activate', (req, res) => {
+// Activate a specific version (site admin or global admin)
+router.put('/sites/:id/versions/:versionId/activate', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -361,8 +371,8 @@ router.put('/sites/:id/versions/:versionId/activate', (req, res) => {
   }
 });
 
-// Delete a specific version
-router.delete('/sites/:id/versions/:versionId', (req, res) => {
+// Delete a specific version (site admin or global admin)
+router.delete('/sites/:id/versions/:versionId', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -396,7 +406,8 @@ router.delete('/sites/:id/versions/:versionId', (req, res) => {
 
 // ==================== Site Auth Config ====================
 
-router.get('/sites/:id/auth', (req, res) => {
+// Get site auth config (site admin or global admin)
+router.get('/sites/:id/auth', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -413,7 +424,8 @@ router.get('/sites/:id/auth', (req, res) => {
   }
 });
 
-router.put('/sites/:id/auth', (req, res) => {
+// Update site auth config (site admin or global admin)
+router.put('/sites/:id/auth', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -467,7 +479,8 @@ router.put('/sites/:id/auth', (req, res) => {
 
 // ==================== Site Admins ====================
 
-router.get('/sites/:id/admins', (req, res) => {
+// Get site admins (site admin or global admin)
+router.get('/sites/:id/admins', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -482,7 +495,8 @@ router.get('/sites/:id/admins', (req, res) => {
   }
 });
 
-router.post('/sites/:id/admins', (req, res) => {
+// Add site admin (site admin or global admin)
+router.post('/sites/:id/admins', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -522,7 +536,8 @@ router.post('/sites/:id/admins', (req, res) => {
   }
 });
 
-router.delete('/sites/:id/admins/:userId', (req, res) => {
+// Remove site admin (site admin or global admin)
+router.delete('/sites/:id/admins/:userId', authMiddleware.requireSiteAdmin, (req, res) => {
   try {
     const site = db.getSiteById(req.params.id);
     if (!site) {
@@ -537,9 +552,55 @@ router.delete('/sites/:id/admins/:userId', (req, res) => {
   }
 });
 
+// ==================== Users ====================
+
+// List all users with their roles (global admin only)
+router.get('/users', authMiddleware.requireAdmin, (req, res) => {
+  try {
+    const users = db.getAllUsers();
+    const usersWithRoles = users.map(user => {
+      const isGlobalAdmin = db.isGlobalAdmin(user.id);
+      const adminSites = db.getSitesByAdmin(user.id);
+      return {
+        ...user,
+        is_global_admin: isGlobalAdmin,
+        site_admin_count: adminSites.length,
+        admin_sites: adminSites.map(s => ({ id: s.id, name: s.name, path: s.path }))
+      };
+    });
+    res.json(usersWithRoles);
+  } catch (error) {
+    console.error('Error listing users:', error);
+    res.status(500).json({ error: 'Failed to list users' });
+  }
+});
+
+// Get user details with roles (global admin only)
+router.get('/users/:userId', authMiddleware.requireAdmin, (req, res) => {
+  try {
+    const user = db.getUserById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isGlobalAdmin = db.isGlobalAdmin(user.id);
+    const adminSites = db.getSitesByAdmin(user.id);
+
+    res.json({
+      ...user,
+      is_global_admin: isGlobalAdmin,
+      admin_sites: adminSites.map(s => ({ id: s.id, name: s.name, path: s.path }))
+    });
+  } catch (error) {
+    console.error('Error getting user:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
 // ==================== Global Admins ====================
 
-router.get('/admins', (req, res) => {
+// Get global admins (global admin only)
+router.get('/admins', authMiddleware.requireAdmin, (req, res) => {
   try {
     const admins = db.getGlobalAdmins();
     res.json(admins);
@@ -549,7 +610,8 @@ router.get('/admins', (req, res) => {
   }
 });
 
-router.post('/admins', (req, res) => {
+// Add global admin (global admin only)
+router.post('/admins', authMiddleware.requireAdmin, (req, res) => {
   try {
     const { user_id, email } = req.body;
     let targetUser;
@@ -584,7 +646,8 @@ router.post('/admins', (req, res) => {
   }
 });
 
-router.delete('/admins/:userId', (req, res) => {
+// Remove global admin (global admin only)
+router.delete('/admins/:userId', authMiddleware.requireAdmin, (req, res) => {
   try {
     // Prevent removing self
     if (req.params.userId === req.user.id) {
