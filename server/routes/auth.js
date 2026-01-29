@@ -21,7 +21,9 @@ router.get('/session', (req, res) => {
   }
 
   const user = db.getUserById(session.user_id);
-  const isAdmin = db.isGlobalAdmin(session.user_id);
+  const isGlobalAdmin = db.isGlobalAdmin(session.user_id);
+  const isSiteAdminRole = db.isSiteAdminRole(session.user_id);
+  const isAdmin = isGlobalAdmin || isSiteAdminRole;
 
   res.json({
     authenticated: true,
@@ -33,7 +35,9 @@ router.get('/session', (req, res) => {
     },
     auth_type: session.auth_type,
     site_id: session.site_id,
-    is_admin: isAdmin
+    is_admin: isAdmin,
+    is_global_admin: isGlobalAdmin,
+    is_site_admin_role: isSiteAdminRole
   });
 });
 
