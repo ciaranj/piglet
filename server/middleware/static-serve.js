@@ -67,7 +67,8 @@ function staticServe(req, res, next) {
   res.set({
     'Content-Type': contentType,
     'Cache-Control': `public, max-age=${cacheMaxAge}`,
-    'X-Content-Type-Options': 'nosniff'
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin'
   });
 
   // Stream the file
