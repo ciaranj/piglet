@@ -16,6 +16,13 @@ const migrations = [
     up: (database) => {
       database.exec(`ALTER TABLE users ADD COLUMN is_site_admin INTEGER DEFAULT 0`);
     }
+  },
+  {
+    version: 2,
+    description: 'Add allow_cross_origin_resource_sharing flag to sites table',
+    up: (database) => {
+      database.exec(`ALTER TABLE sites ADD COLUMN allow_cross_origin_resource_sharing INTEGER DEFAULT 0`);
+    }
   }
 ];
 
@@ -255,6 +262,10 @@ function updateSite(id, updates) {
   if (updates.path !== undefined) {
     fields.push('path = ?');
     values.push(updates.path);
+  }
+  if (updates.allow_cross_origin_resource_sharing !== undefined) {
+    fields.push('allow_cross_origin_resource_sharing = ?');
+    values.push(updates.allow_cross_origin_resource_sharing ? 1 : 0);
   }
 
   if (fields.length > 0) {

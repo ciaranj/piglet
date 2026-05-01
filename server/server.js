@@ -25,7 +25,8 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false, // Disable for static docs that may have inline scripts
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'same-origin' }
 }));
 
 // CORS configuration

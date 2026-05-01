@@ -156,6 +156,26 @@
         </button>
       </section>
 
+      <!-- Advanced Header Configuration -->
+      <section class="card">
+        <h2>Advanced Header Configuration</h2>
+        <p class="description">Configure HTTP response headers for this site's content.</p>
+
+        <div class="form-group">
+          <label class="toggle-option">
+            <input type="checkbox" [(ngModel)]="allowCrossOriginResourceSharing" name="allowCors" />
+            <span class="toggle-label">
+              <strong>Allow Cross Origin Resource Sharing</strong>
+              <small>When enabled, resources on this site can be loaded by other origins (sets <code>Cross-Origin-Resource-Policy: cross-origin</code>)</small>
+            </span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary" (click)="saveHeaderConfig()" [disabled]="savingHeaderConfig()">
+          {{ savingHeaderConfig() ? 'Saving...' : 'Save Header Configuration' }}
+        </button>
+      </section>
+
       <!-- Site Admins -->
       <section class="card">
         <h2>Site Admins</h2>

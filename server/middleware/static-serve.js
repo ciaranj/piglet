@@ -71,6 +71,10 @@ function staticServe(req, res, next) {
     'Referrer-Policy': 'strict-origin-when-cross-origin'
   });
 
+  if (req.site.allow_cross_origin_resource_sharing) {
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+  }
+
   // Stream the file
   const readStream = fs.createReadStream(filePath);
   readStream.on('error', (err) => {

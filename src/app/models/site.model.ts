@@ -7,6 +7,7 @@ export interface Site {
   created_at: string;
   updated_at: string;
   created_by: string;
+  allow_cross_origin_resource_sharing?: boolean;
   auth_configs?: AuthConfig[];
   email_settings?: EmailSettings;
   admins?: User[];
@@ -37,6 +38,7 @@ export interface CreateSiteRequest {
 export interface UpdateSiteRequest {
   name?: string;
   path?: string;
+  allow_cross_origin_resource_sharing?: boolean;
 }
 
 export interface UpdateAuthConfigRequest {

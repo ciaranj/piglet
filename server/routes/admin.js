@@ -159,7 +159,7 @@ router.put('/sites/:id', authMiddleware.requireSiteAdmin, (req, res) => {
       return res.status(404).json({ error: 'Site not found' });
     }
 
-    const { name, path: newPath } = req.body;
+    const { name, path: newPath, allow_cross_origin_resource_sharing } = req.body;
     const updates = {};
 
     if (name) {
@@ -185,6 +185,10 @@ router.put('/sites/:id', authMiddleware.requireSiteAdmin, (req, res) => {
       // Move site directory
       storage.moveSiteDirectory(site.path, newPath);
       updates.path = newPath;
+    }
+
+    if (allow_cross_origin_resource_sharing !== undefined) {
+      updates.allow_cross_origin_resource_sharing = allow_cross_origin_resource_sharing;
     }
 
     const updatedSite = db.updateSite(req.params.id, updates);

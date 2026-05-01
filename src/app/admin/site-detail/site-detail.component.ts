@@ -47,6 +47,8 @@ export class SiteDetailComponent implements OnInit {
   emailFlowType: 'magic_link' | 'register' = 'magic_link';
   emailDomains = '';
   selectedUserId = '';
+  allowCrossOriginResourceSharing = false;
+  savingHeaderConfig = signal(false);
 
   // Filter users to show only site admin role users (not global admins, they already have access)
   availableUsers = computed(() => {
@@ -101,6 +103,7 @@ export class SiteDetailComponent implements OnInit {
           this.emailDomains = site.email_settings.allowed_domains?.join(', ') || '';
         }
 
+        this.allowCrossOriginResourceSharing = !!site.allow_cross_origin_resource_sharing;
         this.siteAdmins.set(site.admins || []);
         this.loading.set(false);
 
@@ -252,6 +255,26 @@ export class SiteDetailComponent implements OnInit {
         console.error('Failed to save auth config:', err);
         this.savingAuth.set(false);
         alert(err.error?.error || 'Failed to save authentication settings');
+      }
+    });
+  }
+
+  saveHeaderConfig() {
+    const currentSite = this.site();
+    if (!currentSite) return;
+
+    this.savingHeaderConfig.set(true);
+    this.sitesService.updateSite(currentSite.id, {
+      allow_cross_origin_resource_sharing: this.allowCrossOriginResourceSharing
+    }).subscribe({
+      next: (updated) => {
+        this.site.set({ ...currentSite, ...updated });
+        this.savingHeaderConfig.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to save header config:', err);
+        this.savingHeaderConfig.set(false);
+        alert(err.error?.error || 'Failed to save header configuration');
       }
     });
   }
