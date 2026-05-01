@@ -20,7 +20,7 @@
     "multer": "^2.0.1",
     "nodemailer": "^7.0.12",
     "unzipper": "^0.12.3",
-    "uuid": "^11.0.5"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
