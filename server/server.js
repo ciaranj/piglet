@@ -57,14 +57,16 @@ app.use(session({
 // Initialize database
 db.initialize();
 
+const noStore = (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); };
+
 // Health check routes (no auth required)
 app.use('/_health', healthRoutes);
 
 // Auth routes
-app.use('/_auth', authRoutes);
+app.use('/_auth', noStore, authRoutes);
 
 // Admin portal API routes (requires Entra ID auth)
-app.use('/_pigsty/api', adminRoutes);
+app.use('/_pigsty/api', noStore, adminRoutes);
 
 // Serve admin portal static files
 app.use('/_pigsty', express.static(path.join(__dirname, '../dist/piglet/browser')));

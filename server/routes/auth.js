@@ -69,6 +69,7 @@ router.get('/entra/callback', async (req, res) => {
     const { code, state } = req.query;
 
     if (state !== req.session.oauthState) {
+      console.warn('[auth:entra] State mismatch in callback');
       return res.status(400).send('Invalid state parameter');
     }
 
@@ -93,6 +94,7 @@ router.get('/entra/callback', async (req, res) => {
           email_verified: true,
           display_name: profile.displayName
         });
+        console.log(`[auth:entra] New user created: ${user.email}`);
       }
 
       // Link Entra identity
@@ -113,8 +115,9 @@ router.get('/entra/callback', async (req, res) => {
       if (!db.hasAnyGlobalAdmins()) {
         // First user to log in becomes a global admin
         db.addGlobalAdmin(user.id, user.id);
-        console.log(`Auto-promoted first user ${user.email} to global admin`);
+        console.log(`[auth:entra] Auto-promoted first user ${user.email} to global admin`);
       } else {
+        console.warn(`[auth:entra] Access denied for ${user.email} — not an administrator`);
         return res.status(403).send('Access denied. You are not an administrator.');
       }
     }
@@ -136,9 +139,15 @@ router.get('/entra/callback', async (req, res) => {
     delete req.session.returnTo;
     delete req.session.oauthState;
 
-    res.redirect(returnTo);
+    req.session.save((err) => {
+      if (err) {
+        console.error('[auth:entra] Session save error:', err);
+        return res.status(500).send('Authentication failed');
+      }
+      res.redirect(returnTo);
+    });
   } catch (error) {
-    console.error('Entra callback error:', error);
+    console.error('[auth:entra] Callback error:', error);
     res.status(500).send('Authentication failed');
   }
 });
@@ -178,6 +187,7 @@ router.get('/google/callback', async (req, res) => {
     const { code, state } = req.query;
 
     if (state !== req.session.oauthState) {
+      console.warn('[auth:google] State mismatch in callback');
       return res.status(400).send('Invalid state parameter');
     }
 
@@ -240,9 +250,15 @@ router.get('/google/callback', async (req, res) => {
     delete req.session.siteId;
     delete req.session.sitePath;
 
-    res.redirect(returnTo);
+    req.session.save((err) => {
+      if (err) {
+        console.error('[auth:google] Session save error:', err);
+        return res.status(500).send('Authentication failed');
+      }
+      res.redirect(returnTo);
+    });
   } catch (error) {
-    console.error('Google callback error:', error);
+    console.error('[auth:google] Callback error:', error);
     res.status(500).send('Authentication failed');
   }
 });
@@ -282,6 +298,7 @@ router.get('/microsoft/callback', async (req, res) => {
     const { code, state } = req.query;
 
     if (state !== req.session.oauthState) {
+      console.warn('[auth:microsoft] State mismatch in callback');
       return res.status(400).send('Invalid state parameter');
     }
 
@@ -344,9 +361,15 @@ router.get('/microsoft/callback', async (req, res) => {
     delete req.session.siteId;
     delete req.session.sitePath;
 
-    res.redirect(returnTo);
+    req.session.save((err) => {
+      if (err) {
+        console.error('[auth:microsoft] Session save error:', err);
+        return res.status(500).send('Authentication failed');
+      }
+      res.redirect(returnTo);
+    });
   } catch (error) {
-    console.error('Microsoft callback error:', error);
+    console.error('[auth:microsoft] Callback error:', error);
     res.status(500).send('Authentication failed');
   }
 });
